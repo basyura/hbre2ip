@@ -184,7 +184,7 @@ func saveHistory(history *History) error {
 	}
 	path := filepath.Join(dir, "history.json")
 
-	b, err := json.Marshal(history)
+	b, err := json.MarshalIndent(history,"", "  ")
 	if err != nil {
 		return err
 	}
