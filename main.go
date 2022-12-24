@@ -37,7 +37,7 @@ func doMain() error {
 		return err
 	}
 
-	entries, err := getEntries()
+	entries, err := getDevEntries()
 	if err != nil {
 		return err
 	}
@@ -128,6 +128,40 @@ func getEntries() ([]Entry, error) {
 		href, isOK := s.Find("a").Attr("href")
 		if isOK {
 			title := strings.TrimSpace(s.Find(".entry-title").Text())
+			entries = append(entries, Entry{Title: title, Url: href})
+		}
+	})
+
+	return entries, nil
+}
+
+/*
+ *
+ */
+
+func getDevEntries() ([]Entry, error) {
+
+	res, err := http.Get("https://hatena.blog/dev")
+	if err != nil {
+		return nil, err
+	}
+	defer res.Body.Close()
+
+	if res.StatusCode != 200 {
+		return nil, fmt.Errorf("status code error: %d %s", res.StatusCode, res.Status)
+	}
+
+	doc, err := goquery.NewDocumentFromReader(res.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	entries := []Entry{}
+	container := doc.Find("#trending ul")
+	container.Children().Each(func(i int, s *goquery.Selection) {
+		href, isOK := s.Find("a").Attr("href")
+		if isOK {
+			title := strings.TrimSpace(s.Find("h4").Text())
 			entries = append(entries, Entry{Title: title, Url: href})
 		}
 	})
